@@ -8,7 +8,7 @@ const _githubUser = 'dinoj';
 const _cdnUrl =
     'https://cdn.jsdelivr.net/gh/$_githubUser/currency-rates-cache@main/rates.json';
 
-const _cacheMaxAgeHours = 24;
+const _cacheMaxAgeHours = 6;
 
 class CurrencyRates {
   final String base;
