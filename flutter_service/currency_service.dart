@@ -4,8 +4,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 
-/// Replace with your actual GitHub username.
-const _githubUser = 'YOUR_USERNAME';
+const _githubUser = 'dinoj';
 const _cdnUrl =
     'https://cdn.jsdelivr.net/gh/$_githubUser/currency-rates-cache@main/rates.json';
 
@@ -70,7 +69,9 @@ class CurrencyService {
   }
 
   Future<CurrencyRates> _fetchAndCache(File file) async {
-    final response = await http.get(Uri.parse(_cdnUrl));
+    final response = await http
+        .get(Uri.parse(_cdnUrl))
+        .timeout(const Duration(seconds: 10));
 
     if (response.statusCode != 200) {
       throw HttpException(
@@ -92,12 +93,20 @@ class CurrencyService {
     required String toCurrency,
     required CurrencyRates rates,
   }) {
+    if (toCurrency != rates.base && !rates.rates.containsKey(toCurrency)) {
+      throw ArgumentError.value(toCurrency, 'toCurrency', 'Currency not in rates');
+    }
+
     if (fromCurrency == rates.base) {
-      return amount * (rates.rates[toCurrency] ?? 1.0);
+      return amount * rates.rates[toCurrency]!;
+    }
+
+    if (!rates.rates.containsKey(fromCurrency)) {
+      throw ArgumentError.value(fromCurrency, 'fromCurrency', 'Currency not in rates');
     }
 
     // Convert to base first, then to target.
-    final toBase = amount / (rates.rates[fromCurrency] ?? 1.0);
-    return toBase * (rates.rates[toCurrency] ?? 1.0);
+    final toBase = amount / rates.rates[fromCurrency]!;
+    return toCurrency == rates.base ? toBase : toBase * rates.rates[toCurrency]!;
   }
 }

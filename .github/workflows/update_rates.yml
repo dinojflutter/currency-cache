@@ -17,10 +17,14 @@ jobs:
 
       - name: Fetch latest rates from Frankfurter API
         run: |
-          curl -sS "https://api.frankfurter.app/latest?from=USD" \
+          curl -sSf --max-time 30 \
+            "https://api.frankfurter.app/latest?from=USD" \
             -o rates.json
           echo "Fetched rates:"
           cat rates.json
+
+      - name: Validate JSON
+        run: jq empty rates.json
 
       - name: Commit and push updated rates
         run: |
